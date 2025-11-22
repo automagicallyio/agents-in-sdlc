@@ -89,7 +89,7 @@ def create_game() -> tuple[Response, int]:
         return jsonify({"error": "Failed to create game"}), 500
 
 @games_bp.route('/api/games/<int:id>', methods=['PUT'])
-def update_game(id: int) -> tuple[Response, int] | Response:
+def update_game(id: int) -> tuple[Response, int]:
     # Get the game to update
     game = db.session.query(Game).filter(Game.id == id).first()
     
