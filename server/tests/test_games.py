@@ -6,6 +6,7 @@ from models import Game, Publisher, Category, db
 from routes.games import games_bp
 
 class TestGamesRoutes(unittest.TestCase):
+    """Test suite for games API routes."""
     # Test data as complete objects
     TEST_DATA: Dict[str, Any] = {
         "publishers": [
@@ -67,7 +68,11 @@ class TestGamesRoutes(unittest.TestCase):
             db.engine.dispose()
 
     def _seed_test_data(self) -> None:
-        """Helper method to seed test data"""
+        """
+        Helper method to seed test data.
+        
+        Creates publishers, categories, and games in the test database.
+        """
         # Create test publishers
         publishers = [
             Publisher(**publisher_data) for publisher_data in self.TEST_DATA["publishers"]
@@ -100,7 +105,15 @@ class TestGamesRoutes(unittest.TestCase):
         db.session.commit()
 
     def _get_response_data(self, response: Response) -> Any:
-        """Helper method to parse response data"""
+        """
+        Helper method to parse response data.
+        
+        Args:
+            response: Flask response object
+            
+        Returns:
+            Parsed JSON data from the response
+        """
         return json.loads(response.data)
 
     def test_get_games_success(self) -> None:

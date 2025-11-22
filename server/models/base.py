@@ -2,10 +2,26 @@
 from . import db
 
 class BaseModel(db.Model):
+    """Base model class for SQLAlchemy models with common validation methods."""
     __abstract__ = True
     
     @staticmethod
     def validate_string_length(field_name, value, min_length=2, allow_none=False):
+        """
+        Validate the length of a string field.
+        
+        Args:
+            field_name: Name of the field being validated (for error messages)
+            value: The value to validate
+            min_length: Minimum required length (default: 2)
+            allow_none: Whether None values are allowed (default: False)
+            
+        Returns:
+            The validated value
+            
+        Raises:
+            ValueError: If validation fails
+        """
         if value is None:
             if allow_none:
                 return value

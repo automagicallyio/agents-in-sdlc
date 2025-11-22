@@ -21,7 +21,12 @@ def create_app():
     return app
 
 def create_games():
-    """Create games, categories and publishers from CSV data for crowd funding platform"""
+    """
+    Create games, categories and publishers from CSV data for crowd funding platform.
+    
+    Reads game data from CSV file and creates corresponding database records,
+    including categories and publishers with auto-generated descriptions.
+    """
     app = create_app()
     
     with app.app_context():
@@ -84,6 +89,11 @@ def create_games():
         print(f"Added {game_count} games with {len(categories)} categories and {len(publishers)} publishers")
 
 def seed_database():
+    """
+    Seed the database with game data.
+    
+    Entry point function that calls create_games to populate the database.
+    """
     create_games()
 
 if __name__ == '__main__':
