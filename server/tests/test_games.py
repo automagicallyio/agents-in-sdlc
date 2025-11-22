@@ -168,5 +168,77 @@ class TestGamesRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(data['error'], "Game not found")
 
+    def test_filter_games_by_category(self) -> None:
+        """Test filtering games by category"""
+        # Get categories to get the ID
+        with self.app.app_context():
+            category = db.session.query(Category).filter_by(name="Strategy").first()
+            category_id = category.id
+        
+        # Act
+        response = self.client.get(f'{self.GAMES_API_PATH}?category={category_id}')
+        data = self._get_response_data(response)
+        
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['title'], "Pipeline Panic")
+        self.assertEqual(data[0]['category']['name'], "Strategy")
+
+    def test_filter_games_by_publisher(self) -> None:
+        """Test filtering games by publisher"""
+        # Get publishers to get the ID
+        with self.app.app_context():
+            publisher = db.session.query(Publisher).filter_by(name="Scrum Masters").first()
+            publisher_id = publisher.id
+        
+        # Act
+        response = self.client.get(f'{self.GAMES_API_PATH}?publisher={publisher_id}')
+        data = self._get_response_data(response)
+        
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['title'], "Agile Adventures")
+        self.assertEqual(data[0]['publisher']['name'], "Scrum Masters")
+
+    def test_filter_games_by_category_and_publisher(self) -> None:
+        """Test filtering games by both category and publisher"""
+        # Get category and publisher IDs
+        with self.app.app_context():
+            category = db.session.query(Category).filter_by(name="Card Game").first()
+            publisher = db.session.query(Publisher).filter_by(name="Scrum Masters").first()
+            category_id = category.id
+            publisher_id = publisher.id
+        
+        # Act
+        response = self.client.get(f'{self.GAMES_API_PATH}?category={category_id}&publisher={publisher_id}')
+        data = self._get_response_data(response)
+        
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['title'], "Agile Adventures")
+
+    def test_filter_games_invalid_category(self) -> None:
+        """Test filtering with invalid category ID"""
+        # Act
+        response = self.client.get(f'{self.GAMES_API_PATH}?category=invalid')
+        data = self._get_response_data(response)
+        
+        # Assert
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], "Invalid category ID")
+
+    def test_filter_games_invalid_publisher(self) -> None:
+        """Test filtering with invalid publisher ID"""
+        # Act
+        response = self.client.get(f'{self.GAMES_API_PATH}?publisher=invalid')
+        data = self._get_response_data(response)
+        
+        # Assert
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], "Invalid publisher ID")
+
 if __name__ == '__main__':
     unittest.main()

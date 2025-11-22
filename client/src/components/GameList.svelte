@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import GameFilters from "./GameFilters.svelte";
 
     interface Game {
         id: number;
@@ -12,11 +13,21 @@
     export let games: Game[] = [];
     let loading = true;
     let error: string | null = null;
+    let selectedCategory: number | null = null;
+    let selectedPublisher: number | null = null;
 
     const fetchGames = async () => {
         loading = true;
         try {
-            const response = await fetch('/api/games');
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (selectedCategory) params.append('category', selectedCategory.toString());
+            if (selectedPublisher) params.append('publisher', selectedPublisher.toString());
+            
+            const queryString = params.toString();
+            const url = queryString ? `/api/games?${queryString}` : '/api/games';
+            
+            const response = await fetch(url);
             if(response.ok) {
                 games = await response.json();
             } else {
@@ -29,12 +40,60 @@
         }
     };
 
+    // Update URL parameters when filters change
+    const updateURLParams = () => {
+        if (typeof window === 'undefined') return;
+        
+        const params = new URLSearchParams(window.location.search);
+        
+        if (selectedCategory) {
+            params.set('category', selectedCategory.toString());
+        } else {
+            params.delete('category');
+        }
+        
+        if (selectedPublisher) {
+            params.set('publisher', selectedPublisher.toString());
+        } else {
+            params.delete('publisher');
+        }
+        
+        const newUrl = params.toString() 
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+        
+        window.history.replaceState({}, '', newUrl);
+    };
+
+    // Load filters from URL on mount
+    const loadFiltersFromURL = () => {
+        if (typeof window === 'undefined') return;
+        
+        const params = new URLSearchParams(window.location.search);
+        const categoryParam = params.get('category');
+        const publisherParam = params.get('publisher');
+        
+        if (categoryParam) selectedCategory = parseInt(categoryParam);
+        if (publisherParam) selectedPublisher = parseInt(publisherParam);
+    };
+
     onMount(() => {
+        loadFiltersFromURL();
         fetchGames();
     });
+
+    // Reactive statement to refetch when filters change
+    $: if (selectedCategory !== null || selectedPublisher !== null || selectedCategory === null || selectedPublisher === null) {
+        if (typeof window !== 'undefined') {
+            updateURLParams();
+            fetchGames();
+        }
+    }
 </script>
 
 <div>
+    <GameFilters bind:selectedCategory bind:selectedPublisher />
+    
     <h2 class="text-2xl font-medium mb-6 text-slate-100">Featured Games</h2>
     
     {#if loading}
